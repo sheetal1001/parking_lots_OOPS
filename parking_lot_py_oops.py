@@ -1,39 +1,60 @@
 class Vehicle:
+
     def __init__(self,number_plate):
         self.__number_plate=number_plate
+        self.__duration=0
         
     def getVehicleNum(self):
         return self.__number_plate
+    
     def set_time(self, time_entry=0, time_exit=0):
         if(time_entry!=0):
             self.__entry_time = time_entry
         if(time_exit!=0):
             self.__exit_time = time_exit
 
-class Bus(Vehicle):
-    
-    def fare_calculation(self):
-        pass
+    def duration(self):
+        self.__duration= self.__exit_time-self.__entry_time
+        return self.__duration
+
 
 class Bike(Vehicle):
-    pass
+    def get_Parking_fee(self):
+        self.__fee_per_minute =1
+        fare = self.duration()*self.__fee_per_minute
+        return fare
 
 class Car(Vehicle):
-    pass
-
+    def get_Parking_fee(self):
+        self.__fee_per_minute =2
+        fare = self.duration()*self.__fee_per_minute
+        return fare
+    
+class Bus(Vehicle):    
+    def get_Parking_fee(self):
+        self.__fee_per_minute =5
+        fare = self.duration()*self.__fee_per_minute
+        return fare
+    
 class Slots:
-    def __init__(self,id, vehicle):
+    def __init__(self,id):
         self.__id = id
         self.__vn = None
         self.__is_occupied = False
     
+    def time_to_minutes(self, time_string):
+        h, m = map(int, time_string.split(':'))
+        if( h>24 or h<0 or m<0 or m>60):
+            return -1
+        else:
+            return (h*60)+m
     def assign_vehicle(self,vehicle):
         entry_time= input("Enter the entry time in 00:00 24hrs format ")
-        h1,m1= map(int, entry_time.split(":"))
-        if((h1<0 or h1>24) or (m1<0 or m1>60)):
+        en_t=self.time_to_minutes(entry_time)
+        if(en_t==-1):
             print("Entry time not correct")
         else:
-            vehicle.set_time(entry_time,0)
+            vehicle.set_time(en_t,0)
             self.__is_occupied=True
             self.__vn = vehicle.getVehicleNum()
             print("Parking done at " + self.__id)
@@ -50,7 +71,20 @@ class Slots:
     
 class Ticket:
     def __init__(self,vehicle):
-        pass
+        self.__fare=vehicle.get_Parking_fee()
+        self.__dur=vehicle.duration()
+        self.__vn = vehicle.getVehicleNum()
+    
+    def __str__(self):
+         return (
+            "----- Parking Ticket -----\n"
+            f"Vehicle Number: {self.__vn}\n"
+            f"Duration: {self.__dur} minutes\n"
+            f"Fare: ₹{self.__fare}\n"
+            "--------------------------"
+        )
+
+        
 
 
     
@@ -62,12 +96,11 @@ class ParkingLot:
     def __initialize_parking_lot():
         if not ParkingLot.__is_initialized:
             ParkingLot.__slots = {
-                'Car': [Slots('C1', 'car'), Slots('C2','car')],
-                'Bike': [Slots('B1', 'bike'), Slots('B2','bike'),Slots('B3','bike')],
-                'Bus': [Slots('BUS1', 'bus')]
+                'Car': [Slots('C1'), Slots('C2')],
+                'Bike': [Slots('B1'), Slots('B2'),Slots('B3')],
+                'Bus': [Slots('BUS1')]
             }
         ParkingLot.__is_initialized = True
-
 
     def __init__(self,vehicle):
          ParkingLot.__initialize_parking_lot() 
@@ -94,9 +127,9 @@ class ParkingLot:
         elif(user_input=='3'):
             print("Unparking the vehicle")
             self.__unpark(vehicle)
-            self.__menu(vehicle)
-        else:
             print("Thank you for using the Parking lot!")
+        else:
+            print("EXIT")
     
     def __status(self):
         for k,v in ParkingLot.__slots.items():
@@ -135,12 +168,13 @@ class ParkingLot:
             print("Vehicle does not exist in the parking")
         else:
             exit_time = input("Enter the exit time of the vehicle in 00:00 24hrs format ")
-            h1,m1= map(int, exit_time.split(":"))
-            if((h1<0 or h1>24) or (m1<0 or m1>60)):
+            ex_t=slot.time_to_minutes(exit_time)
+            if(ex_t==-1):
                 print("Exit time not correct")
             else:
-                vehicle.set_time(0,exit_time)
+                vehicle.set_time(0,ex_t)
                 slot.release()
+                print(Ticket(vehicle))
 
             
 
