@@ -93,12 +93,11 @@ class ParkingLot:
             }
         ParkingLot.__is_initialized = True
 
-    def __init__(self,vehicle):
+    def __init__(self):
          ParkingLot.__initialize_parking_lot() 
          print("Welcome to the Parking lot of ABC mall!")
-         self.__menu(vehicle)
 
-    def __menu(self,vehicle):
+    def menu(self,vehicle):
         user_input= input("""
     Please choose one of the options to proceed:
     1. Choose 1 to view status of unoccupied slots
@@ -110,11 +109,11 @@ class ParkingLot:
         if(user_input=='1'):
             print("The status of parking lot is as follows:")
             self.__status() 
-            self.__menu(vehicle)
+            self.menu(vehicle)
         elif(user_input=='2'):
             print("Looking availability for parking the Vehicle")
             self.__park(vehicle)
-            self.__menu(vehicle)
+            self.menu(vehicle)
         elif(user_input=='3'):
             print("Unparking the vehicle")
             self.__unpark(vehicle)
@@ -188,10 +187,10 @@ def main():
         get_vehicle('Bus', 'BUS303'),
         get_vehicle('Car', 'AB101')  # Reuses the same object
     ]
-
+    lot = ParkingLot()
     for vehicle in vehicles:
         print("\n--- New Parking Session ---")
-        ParkingLot(vehicle)
+        lot.menu(vehicle)
      
 if __name__ == "__main__":
     main()            
