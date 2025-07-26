@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class Vehicle:
 
     def __init__(self,number_plate):
@@ -14,25 +16,26 @@ class Vehicle:
             self.__exit_time = time_exit
 
     def duration(self):
-        self.__duration= self.__exit_time-self.__entry_time
+        dur_diff= self.__exit_time-self.__entry_time
+        self.__duration = float(format((dur_diff.total_seconds())/60, '.3f'))
         return self.__duration
 
 
 class Bike(Vehicle):
     def get_Parking_fee(self):
-        self.__fee_per_minute =1
+        self.__fee_per_minute =10
         fare = self.duration()*self.__fee_per_minute
         return fare
 
 class Car(Vehicle):
     def get_Parking_fee(self):
-        self.__fee_per_minute =2
+        self.__fee_per_minute =20
         fare = self.duration()*self.__fee_per_minute
         return fare
     
 class Bus(Vehicle):    
     def get_Parking_fee(self):
-        self.__fee_per_minute =5
+        self.__fee_per_minute =50
         fare = self.duration()*self.__fee_per_minute
         return fare
     
@@ -42,22 +45,13 @@ class Slots:
         self.__vn = None
         self.__is_occupied = False
     
-    def time_to_minutes(self, time_string):
-        h, m = map(int, time_string.split(':'))
-        if( h>24 or h<0 or m<0 or m>60):
-            return -1
-        else:
-            return (h*60)+m
+        
     def assign_vehicle(self,vehicle):
-        entry_time= input("Enter the entry time in 00:00 24hrs format ")
-        en_t=self.time_to_minutes(entry_time)
-        if(en_t==-1):
-            print("Entry time not correct")
-        else:
-            vehicle.set_time(en_t,0)
-            self.__is_occupied=True
-            self.__vn = vehicle.getVehicleNum()
-            print("Parking done at " + self.__id)
+        entry_time= datetime.now()
+        vehicle.set_time(entry_time,0)
+        self.__is_occupied=True
+        self.__vn = vehicle.getVehicleNum()
+        print("Parking done at " + self.__id)
 
     def release(self):
         self.__is_occupied = False
@@ -84,10 +78,7 @@ class Ticket:
             "--------------------------"
         )
 
-        
-
-
-    
+            
 class ParkingLot:
 
     __slots ={}
@@ -137,7 +128,7 @@ class ParkingLot:
             for slot in v:
                 if not slot.isOccupied():
                     count+=1
-            print("No of unoccupied slots for " + f"{k}" + ":" ,end=" ")
+            print("No. of unoccupied slots for " + f"{k}" + ":" ,end=" ")
             print(count)
         
     def __valid_parking(self,vehicle):
@@ -153,13 +144,13 @@ class ParkingLot:
         if not self.__valid_parking(vehicle):
             for slot in ParkingLot.__slots[vtype]:
                 if not slot.isOccupied():
-                    s1= slot.assign_vehicle(vehicle)
+                    slot.assign_vehicle(vehicle)
                     no_empty_slot_found = False 
                     break
             if no_empty_slot_found:
                 print ("Empty slots not found for " + vtype)
         else:
-            print("Vehicle already exist in the parking, can not park again")
+            print("Vehicle already exists in the parking, can not park again")
         
 
     def __unpark(self,vehicle):
@@ -167,19 +158,40 @@ class ParkingLot:
         if(slot==False):
             print("Vehicle does not exist in the parking")
         else:
-            exit_time = input("Enter the exit time of the vehicle in 00:00 24hrs format ")
-            ex_t=slot.time_to_minutes(exit_time)
-            if(ex_t==-1):
-                print("Exit time not correct")
-            else:
-                vehicle.set_time(0,ex_t)
-                slot.release()
-                print(Ticket(vehicle))
+            exit_time = datetime.now()
+            vehicle.set_time(0,exit_time)
+            slot.release()
+            print(Ticket(vehicle))
 
             
 
 
-a=Car('AB101') 
-b=ParkingLot(a) 
+def main():
+#Testing the ParkingLot class
+    vehicle_registry = {}
+
+# Function to get or create a vehicle
+    def get_vehicle(vtype, number_plate):
+        if number_plate not in vehicle_registry:
+            if vtype == 'Car':
+                vehicle_registry[number_plate] = Car(number_plate)
+            elif vtype == 'Bike':
+                vehicle_registry[number_plate] = Bike(number_plate)
+            elif vtype == 'Bus':
+                vehicle_registry[number_plate] = Bus(number_plate)
+        return vehicle_registry[number_plate]
+
+# Sample test simulation
+    vehicles = [
+        get_vehicle('Car', 'AB101'),
+        get_vehicle('Bike', 'BK202'),
+        get_vehicle('Bus', 'BUS303'),
+        get_vehicle('Car', 'AB101')  # Reuses the same object
+    ]
+
+    for vehicle in vehicles:
+        print("\n--- New Parking Session ---")
+        ParkingLot(vehicle)
      
-             
+if __name__ == "__main__":
+    main()            
